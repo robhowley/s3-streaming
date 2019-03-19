@@ -8,7 +8,7 @@ from csv import DictReader, reader as csv_reader, excel_tab as csv_excel_tab
 __all__ = ['deserialize', 'compression', 'StreamingBodyFileobj']
 
 
-class IterableWrap(object):
+class FileLikeLineIterable(object):
     def __init__(self, wrapped_iterable):
         self.wrapped_iterable = wrapped_iterable
 
@@ -22,8 +22,14 @@ class IterableWrap(object):
     def __next__(self):
         return self.next()
 
+    def read(self, amt=1):
+        return getattr(self.wrapped_iterable, 'read', self.readlines)(amt)
 
-class StreamingBodyFileobj(IterableWrap):
+    def readlines(self, amt=1):
+        return [self.next() for _ in range(amt)]
+
+
+class StreamingBodyFileobj(FileLikeLineIterable):
     def __init__(self, streaming_body):
         self.streaming_body = streaming_body
         super(StreamingBodyFileobj, self).__init__(self.streaming_body._raw_stream)
@@ -32,7 +38,7 @@ class StreamingBodyFileobj(IterableWrap):
         return getattr(self.streaming_body._raw_stream, item)
 
 
-class IterGzip(IterableWrap):
+class IterGzip(FileLikeLineIterable):
     @staticmethod
     def _scan_chunks(streaming_body):
         decompressor = zlib.decompressobj(32 + zlib.MAX_WBITS).decompress
@@ -51,7 +57,7 @@ class IterGzip(IterableWrap):
         super(IterGzip, self).__init__(IterGzip._scan_chunks(stream))
 
 
-class JsonLinesReader(IterableWrap):
+class JsonLinesReader(FileLikeLineIterable):
     def __init__(self, fileobj, **kwargs):
         self.kwargs = kwargs
         super(JsonLinesReader, self).__init__((json.loads(nl, **kwargs) for nl in fileobj))

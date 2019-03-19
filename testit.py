@@ -58,23 +58,23 @@ with s3_open(res_comp_json, deserializer=deserialize.json_lines, compression=com
     print(type(next_line))
     print(next_line.keys())
     print(next_line)
-    print(len(f.read(2)))
+    print(f.read(2))
 
 
-print(' ')
-print(' ')
-print('s3_open(zd3, comp_tsv, deserializer=deserialize.tsv_as_dict, compression=compression.gzip)')
-with s3_open(zd3_comp_tsv, deserializer=deserialize.tsv_as_dict, compression=compression.gzip) as f:
-    next_line = next(f)
-    print(type(next_line))
-    print(next_line.keys())
-    print(next_line)
-
-
-print(' ')
-print(' ')
-print('s3_open(spo_b, spo_k, deserializer=deserialize.json_lines)')
-with s3_open(spo_b, deserializer=deserialize.json_lines) as spo_iter:
-    next_spo_iter = next(spo_iter)
-    print(type(next_spo_iter))
-    print(next_spo_iter)
+# print(' ')
+# print(' ')
+# print('s3_open(zd3, comp_tsv, deserializer=deserialize.tsv_as_dict, compression=compression.gzip)')
+# with s3_open(zd3_comp_tsv, deserializer=deserialize.tsv_as_dict, compression=compression.gzip) as f:
+#     next_line = next(f)
+#     print(type(next_line))
+#     print(next_line.keys())
+#     print(next_line)
+#
+#
+# print(' ')
+# print(' ')
+# print('s3_open(spo_b, spo_k, deserializer=deserialize.json_lines)')
+# with s3_open(spo_b, deserializer=deserialize.json_lines) as spo_iter:
+#     next_spo_iter = next(spo_iter)
+#     print(type(next_spo_iter))
+#     print(next_spo_iter)
