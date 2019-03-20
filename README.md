@@ -1,7 +1,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-# s3-streaming: handling S3 objects like regular files
-Storing, retrieving and using files in S3 is a big deal so it should be easy. It should also ...
+# s3-streaming: handling (big) S3 files like regular files
+Storing, retrieving and using files in S3 is a regular activity so it should be easy. It should also ...
 * stream the data
 * have an api that is python file-io like
 * handle some of the desearization and compression stuff because why not
@@ -45,7 +45,7 @@ reader_settings = dict(
 with s3_open('s3://bucket/key.gzip', **reader_settings) as f:
     for next_line in f:
         print(next_line.keys())    # because the file was decompressed ...
-        print(next_line.values())  #   ... and the json is a dict!
+        print(next_line.values())  #   ... and the json is now a loaded dict!
 
 ```
 
