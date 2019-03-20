@@ -1,6 +1,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-# s3-streaming: handling S3 objects like regular (streamable) files
+# s3-streaming: handling S3 objects like regular files
 Storing, retrieving and using files in S3 is a big deal so it should be easy. It should also ...
 * stream the data
 * have an api that is python file-io like
@@ -11,7 +11,6 @@ Storing, retrieving and using files in S3 is a big deal so it should be easy. It
 ```bash
 pip install s3-streaming
 ```
-
 
 ## Streaming S3 objects like regular files
 
@@ -49,3 +48,9 @@ with s3_open('s3://bucket/key.gzip', **reader_settings) as f:
         print(next_line.values())  #   ... and the json is a dict!
 
 ```
+
+Other `deserialize` options include 
+* `csv`
+* `csv_as_dict`
+* `tsv`
+* `tsv_as_dict`
