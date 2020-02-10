@@ -1,6 +1,6 @@
 
 import boto3
-from urlparse import urlparse
+from urllib.parse import urlparse
 from contextlib import contextmanager
 from s3streaming.stream import StreamingBodyFileobj, deserialize, compression
 
