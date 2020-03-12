@@ -1,6 +1,8 @@
 
 import zlib
 import json
+import codecs
+from functools import partial
 from collections import namedtuple
 from csv import DictReader, reader as csv_reader, excel_tab as csv_excel_tab
 
@@ -70,17 +72,26 @@ def __dict_to_namedtuple(type_name, some_dict):
 
 
 COMPRESSION = dict(none=lambda s: s, gzip=IterGzip)
+
 DESERIALIZERS = dict(
     none=lambda s: s,
     json_lines=JsonLinesReader,
-    delimited=lambda fobj, dialect='excel', **fmtparams: csv_reader(fobj, dialect=dialect, **fmtparams),
-    delimited_as_dict=DictReader,
+    delimited=lambda fobj, dialect='excel', encoding='utf-8', **fmt_kwargs: csv_reader(
+        codecs.getreader(encoding)(fobj),
+        dialect=dialect,
+        **fmt_kwargs
+    ),
+    delimited_as_dict=lambda fobj, dialect='excel', encoding='utf-8', **fmt_kwargs: DictReader(
+        codecs.getreader(encoding)(fobj),
+        dialect=dialect,
+        **fmt_kwargs
+    )
 )
 DESERIALIZERS.update(
     csv=DESERIALIZERS['delimited'],
     csv_as_dict=DESERIALIZERS['delimited_as_dict'],
-    tsv=lambda fobj, **fmtparams: DESERIALIZERS['delimited'](fobj, dialect=csv_excel_tab, **fmtparams),
-    tsv_as_dict=lambda fobj, **fmtparams: DESERIALIZERS['delimited_as_dict'](fobj, dialect=csv_excel_tab, **fmtparams)
+    tsv=partial(DESERIALIZERS['delimited'], dialect=csv_excel_tab),
+    tsv_as_dict=partial(DESERIALIZERS['delimited_as_dict'], dialect=csv_excel_tab)
 )
 
 deserialize = __dict_to_namedtuple('Deserialize', DESERIALIZERS)
