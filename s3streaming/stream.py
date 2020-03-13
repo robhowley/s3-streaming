@@ -1,8 +1,14 @@
 
-import zlib
 import json
+import gzip
+import codecs
+from functools import partial
 from collections import namedtuple
-from csv import DictReader, reader as csv_reader, excel_tab as csv_excel_tab
+from csv import (
+    DictReader,
+    reader as csv_reader,
+    excel_tab as csv_excel_tab
+)
 
 
 __all__ = ['deserialize', 'compression', 'StreamingBodyFileobj']
@@ -29,34 +35,6 @@ class FileLikeLineIterable(object):
         return [self.next() for _ in range(amt)]
 
 
-class StreamingBodyFileobj(FileLikeLineIterable):
-    def __init__(self, streaming_body):
-        self.streaming_body = streaming_body
-        super(StreamingBodyFileobj, self).__init__(self.streaming_body._raw_stream)
-
-    def __getattr__(self, item):
-        return getattr(self.streaming_body._raw_stream, item)
-
-
-class IterGzip(FileLikeLineIterable):
-    @staticmethod
-    def _scan_chunks(streaming_body):
-        decompressor = zlib.decompressobj(32 + zlib.MAX_WBITS).decompress
-
-        next_line = ''
-        for chunk in streaming_body:
-            line_broken = decompressor(chunk).split('\n')
-            next_line += line_broken[0]
-            if len(line_broken) > 1:
-                yield next_line
-                for line in line_broken[1:-1]:
-                    yield line
-                next_line = line_broken[-1]
-
-    def __init__(self, stream):
-        super(IterGzip, self).__init__(IterGzip._scan_chunks(stream))
-
-
 class JsonLinesReader(FileLikeLineIterable):
     def __init__(self, fileobj, **kwargs):
         self.kwargs = kwargs
@@ -69,18 +47,28 @@ def __dict_to_namedtuple(type_name, some_dict):
     return namedtuple(type_name, field_names)(*field_values)
 
 
-COMPRESSION = dict(none=lambda s: s, gzip=IterGzip)
+COMPRESSION = dict(none=lambda s: s, gzip=gzip.open)
+
 DESERIALIZERS = dict(
     none=lambda s: s,
+    string=lambda fobj, encoding='utf-8': (s.decode(encoding) for s in fobj),
     json_lines=JsonLinesReader,
-    delimited=lambda fobj, dialect='excel', **fmtparams: csv_reader(fobj, dialect=dialect, **fmtparams),
-    delimited_as_dict=DictReader,
+    delimited=lambda fobj, dialect='excel', encoding='utf-8', **fmt_kwargs: csv_reader(
+        codecs.getreader(encoding)(fobj),
+        dialect=dialect,
+        **fmt_kwargs
+    ),
+    delimited_as_dict=lambda fobj, dialect='excel', encoding='utf-8', **fmt_kwargs: DictReader(
+        codecs.getreader(encoding)(fobj),
+        dialect=dialect,
+        **fmt_kwargs
+    )
 )
 DESERIALIZERS.update(
     csv=DESERIALIZERS['delimited'],
     csv_as_dict=DESERIALIZERS['delimited_as_dict'],
-    tsv=lambda fobj, **fmtparams: DESERIALIZERS['delimited'](fobj, dialect=csv_excel_tab, **fmtparams),
-    tsv_as_dict=lambda fobj, **fmtparams: DESERIALIZERS['delimited_as_dict'](fobj, dialect=csv_excel_tab, **fmtparams)
+    tsv=partial(DESERIALIZERS['delimited'], dialect=csv_excel_tab),
+    tsv_as_dict=partial(DESERIALIZERS['delimited_as_dict'], dialect=csv_excel_tab)
 )
 
 deserialize = __dict_to_namedtuple('Deserialize', DESERIALIZERS)

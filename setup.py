@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='s3-streaming',
-    version='0.0.1',
+    version='0.0.3',
     author='Rob Howley',
     author_email='howley.robert@gmail.com',
     description='stream and (de)serialize s3 objects with no local footprint',
@@ -15,7 +15,6 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     classifiers=[
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 2',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
     ]

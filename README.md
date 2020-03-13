@@ -54,3 +54,4 @@ Other `deserialize` options include
 * `csv_as_dict`
 * `tsv`
 * `tsv_as_dict`
+* `string`
