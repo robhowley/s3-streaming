@@ -1,7 +1,7 @@
 
 from urllib.parse import urlparse
 from contextlib import contextmanager
-from s3streaming.stream import StreamingBodyFileobj, deserialize, compression
+from s3streaming.stream import deserialize, compression
 
 
 __all__ = ['s3_open']
